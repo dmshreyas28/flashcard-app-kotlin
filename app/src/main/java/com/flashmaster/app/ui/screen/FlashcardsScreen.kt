@@ -17,6 +17,7 @@ import com.flashmaster.app.ui.viewmodel.FlashcardViewModel
 import com.flashmaster.app.util.CsvExportUtil
 import kotlinx.coroutines.launch
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FlashcardsScreen(
     topicId: Long,
