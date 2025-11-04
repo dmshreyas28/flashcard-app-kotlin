@@ -23,18 +23,22 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.flashmaster.app.data.model.Subject
 import com.flashmaster.app.ui.theme.SubjectColors
 import com.flashmaster.app.ui.viewmodel.SubjectViewModel
+import com.flashmaster.app.ui.viewmodel.AuthViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SubjectsScreen(
     onSubjectClick: (Long) -> Unit,
     onLogout: () -> Unit,
-    viewModel: SubjectViewModel = hiltViewModel()
+    viewModel: SubjectViewModel = hiltViewModel(),
+    authViewModel: AuthViewModel = hiltViewModel()
 ) {
     val subjects by viewModel.subjects.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
     var showAddDialog by remember { mutableStateOf(false) }
     var showMenu by remember { mutableStateOf(false) }
+    var subjectToEdit by remember { mutableStateOf<Subject?>(null) }
+    var subjectToDelete by remember { mutableStateOf<Subject?>(null) }
 
     Scaffold(
         topBar = {
@@ -57,6 +61,7 @@ fun SubjectsScreen(
                             text = { Text("Sign Out") },
                             onClick = {
                                 showMenu = false
+                                authViewModel.signOut()
                                 onLogout()
                             },
                             leadingIcon = {
@@ -108,7 +113,9 @@ fun SubjectsScreen(
                         items(subjects) { subject ->
                             SubjectCard(
                                 subject = subject,
-                                onClick = { onSubjectClick(subject.id) }
+                                onClick = { onSubjectClick(subject.id) },
+                                onEdit = { subjectToEdit = it },
+                                onDelete = { subjectToDelete = it }
                             )
                         }
                     }
@@ -125,15 +132,52 @@ fun SubjectsScreen(
                 }
             )
         }
+        
+        subjectToEdit?.let { subject ->
+            EditSubjectDialog(
+                subject = subject,
+                onDismiss = { subjectToEdit = null },
+                onConfirm = { name, color ->
+                    viewModel.updateSubject(subject.copy(name = name, color = color))
+                    subjectToEdit = null
+                }
+            )
+        }
+        
+        subjectToDelete?.let { subject ->
+            AlertDialog(
+                onDismissRequest = { subjectToDelete = null },
+                title = { Text("Delete Subject") },
+                text = { Text("Are you sure you want to delete '${subject.name}'? All topics and flashcards will be deleted.") },
+                confirmButton = {
+                    TextButton(
+                        onClick = {
+                            viewModel.deleteSubject(subject)
+                            subjectToDelete = null
+                        }
+                    ) {
+                        Text("Delete", color = MaterialTheme.colorScheme.error)
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { subjectToDelete = null }) {
+                        Text("Cancel")
+                    }
+                }
+            )
+        }
     }
 }
 
 @Composable
 fun SubjectCard(
     subject: Subject,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    onEdit: (Subject) -> Unit,
+    onDelete: (Subject) -> Unit
 ) {
     var pressed by remember { mutableStateOf(false) }
+    var showMenu by remember { mutableStateOf(false) }
     val scale by animateFloatAsState(if (pressed) 0.95f else 1f, label = "scale")
     
     Card(
@@ -158,12 +202,53 @@ fun SubjectCard(
                 modifier = Modifier.fillMaxSize(),
                 verticalArrangement = Arrangement.SpaceBetween
             ) {
-                Icon(
-                    imageVector = Icons.Default.Book,
-                    contentDescription = null,
-                    tint = Color.White,
-                    modifier = Modifier.size(32.dp)
-                )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.Top
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Book,
+                        contentDescription = null,
+                        tint = Color.White,
+                        modifier = Modifier.size(32.dp)
+                    )
+                    
+                    Box {
+                        IconButton(onClick = { showMenu = true }) {
+                            Icon(
+                                Icons.Default.MoreVert,
+                                contentDescription = "More options",
+                                tint = Color.White
+                            )
+                        }
+                        DropdownMenu(
+                            expanded = showMenu,
+                            onDismissRequest = { showMenu = false }
+                        ) {
+                            DropdownMenuItem(
+                                text = { Text("Edit") },
+                                onClick = {
+                                    showMenu = false
+                                    onEdit(subject)
+                                },
+                                leadingIcon = {
+                                    Icon(Icons.Default.Edit, contentDescription = null)
+                                }
+                            )
+                            DropdownMenuItem(
+                                text = { Text("Delete") },
+                                onClick = {
+                                    showMenu = false
+                                    onDelete(subject)
+                                },
+                                leadingIcon = {
+                                    Icon(Icons.Default.Delete, contentDescription = null)
+                                }
+                            )
+                        }
+                    }
+                }
                 
                 Text(
                     text = subject.name,
@@ -294,6 +379,100 @@ fun AddSubjectDialog(
                 enabled = subjectName.isNotBlank()
             ) {
                 Text("Add")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Cancel")
+            }
+        }
+    )
+}
+
+@Composable
+fun EditSubjectDialog(
+    subject: Subject,
+    onDismiss: () -> Unit,
+    onConfirm: (String, String) -> Unit
+) {
+    var subjectName by remember { mutableStateOf(subject.name) }
+    var selectedColorIndex by remember {
+        mutableStateOf(
+            SubjectColors.indexOfFirst {
+                String.format("#%06X", 0xFFFFFF and it.hashCode()) == subject.color
+            }.takeIf { it != -1 } ?: 0
+        )
+    }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Edit Subject") },
+        text = {
+            Column {
+                OutlinedTextField(
+                    value = subjectName,
+                    onValueChange = { subjectName = it },
+                    label = { Text("Subject Name") },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth()
+                )
+                
+                Spacer(modifier = Modifier.height(16.dp))
+                
+                Text(
+                    "Choose a color",
+                    style = MaterialTheme.typography.labelLarge
+                )
+                
+                Spacer(modifier = Modifier.height(8.dp))
+                
+                LazyVerticalGrid(
+                    columns = GridCells.Fixed(8),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                    modifier = Modifier.height(120.dp)
+                ) {
+                    items(SubjectColors.size) { index ->
+                        val color = SubjectColors[index]
+                        val isSelected = selectedColorIndex == index
+                        
+                        Box(
+                            modifier = Modifier
+                                .size(32.dp)
+                                .background(
+                                    color = color,
+                                    shape = RoundedCornerShape(8.dp)
+                                )
+                                .clickable { selectedColorIndex = index },
+                            contentAlignment = Alignment.Center
+                        ) {
+                            if (isSelected) {
+                                Icon(
+                                    Icons.Default.Check,
+                                    contentDescription = null,
+                                    tint = Color.White,
+                                    modifier = Modifier.size(20.dp)
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        confirmButton = {
+            TextButton(
+                onClick = {
+                    if (subjectName.isNotBlank()) {
+                        val hexColor = String.format(
+                            "#%06X",
+                            0xFFFFFF and SubjectColors[selectedColorIndex].hashCode()
+                        )
+                        onConfirm(subjectName, hexColor)
+                    }
+                },
+                enabled = subjectName.isNotBlank()
+            ) {
+                Text("Save")
             }
         },
         dismissButton = {
