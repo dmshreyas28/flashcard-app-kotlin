@@ -14,7 +14,6 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.flashmaster.app.ui.viewmodel.TopicViewModel
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TopicsScreen(
     subjectId: Long,

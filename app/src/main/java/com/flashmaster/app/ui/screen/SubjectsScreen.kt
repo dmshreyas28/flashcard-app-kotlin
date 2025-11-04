@@ -25,7 +25,6 @@ import com.flashmaster.app.ui.theme.SubjectColors
 import com.flashmaster.app.ui.viewmodel.SubjectViewModel
 import com.flashmaster.app.ui.viewmodel.AuthViewModel
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SubjectsScreen(
     onSubjectClick: (Long) -> Unit,

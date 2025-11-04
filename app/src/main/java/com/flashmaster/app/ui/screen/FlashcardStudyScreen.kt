@@ -18,7 +18,6 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.flashmaster.app.data.model.Flashcard
 import com.flashmaster.app.ui.viewmodel.FlashcardViewModel
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FlashcardStudyScreen(
     topicId: Long,
