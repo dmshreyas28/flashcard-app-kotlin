@@ -11,8 +11,11 @@ A beautiful Android application built with Kotlin and Jetpack Compose that helps
 
 🎴 **Flashcard Management**
 - Create subjects with custom colors
+- **Edit and delete subjects**
 - Organize topics within subjects
+- **Edit and delete topics**
 - Add unlimited flashcards per topic
+- **Edit and delete individual flashcards**
 - Search functionality for quick access
 
 📖 **Study Mode**
@@ -32,19 +35,23 @@ A beautiful Android application built with Kotlin and Jetpack Compose that helps
 - Automatic data synchronization
 
 📤 **Sharing & Export**
-- Share flashcard sets with others
 - Export flashcards to CSV format
+- Share CSV files with other apps
+- **Three-dot menu for quick actions**
+- **Delete confirmations to prevent accidents**
 
 ## Tech Stack
 
-- **Language**: Kotlin
-- **UI Framework**: Jetpack Compose
+- **Language**: Kotlin 1.9.20
+- **UI Framework**: Jetpack Compose with Material 3
+- **Compose BOM**: 2024.04.01 (latest stable APIs)
 - **Architecture**: MVVM (Model-View-ViewModel)
-- **Dependency Injection**: Hilt
-- **Local Database**: Room (SQLite)
+- **Dependency Injection**: Hilt/Dagger
+- **Local Database**: Room Database (SQLite)
 - **Cloud Storage**: Firebase Firestore
-- **Authentication**: Firebase Auth (Google Sign-In)
+- **Authentication**: Firebase Auth with Google Sign-In
 - **Navigation**: Jetpack Navigation Compose
+- **Async Processing**: Kotlin Coroutines & Flow
 
 ## Prerequisites
 
@@ -146,6 +153,19 @@ app/
 4. Use "Previous" and "Next" buttons to navigate
 5. Cards are shown in random order for better learning
 
+### Editing Items
+
+1. **Edit Subject**: Tap the ⋮ menu on any subject card → Edit → Update name/color
+2. **Edit Topic**: Tap the ⋮ menu on any topic card → Edit → Update name
+3. **Edit Flashcard**: Tap the ⋮ menu on any flashcard → Edit → Update front/back text
+
+### Deleting Items
+
+1. Tap the ⋮ menu on any subject, topic, or flashcard
+2. Select "Delete"
+3. Confirm deletion in the popup dialog
+4. **Note**: Deleting a subject removes all its topics and flashcards. Deleting a topic removes all its flashcards.
+
 ### Searching Topics
 
 1. Go to the Topics screen
@@ -194,10 +214,10 @@ The flashcard study mode features a smooth 3D flip animation using Compose's `gr
 16 beautiful preset colors to organize your subjects visually. Each subject maintains its unique color throughout the app.
 
 ### Offline First Architecture
-All data is stored locally first using Room Database, ensuring the app works perfectly offline. When online, data syncs to Firebase Firestore for backup.
+All data is stored locally first using Room Database, ensuring the app works perfectly offline. When online, data syncs to Firebase Firestore for backup and cross-device access.
 
 ### Material 3 Design
-Built with the latest Material 3 design system, supporting both light and dark themes with dynamic colors on Android 12+.
+Built with the latest Material 3 design system (Compose BOM 2024.04.01), supporting both light and dark themes with dynamic colors on Android 12+. Features smooth animations and modern UI patterns including AutoMirrored icons for RTL language support.
 
 ## Troubleshooting
 
@@ -226,14 +246,17 @@ This project is open source and available under the MIT License.
 
 ## Author
 
-Created by Skyrocket345
+Created by **Shreyas** ([@dmshreyas28](https://github.com/dmshreyas28))
 
 ## Acknowledgments
 
 - Material Design team for the beautiful design system
 - Firebase team for the excellent backend services
 - Android community for amazing libraries and support
+- Jetpack Compose team for the modern UI toolkit
 
 ---
 
 **Happy Learning with FlashMaster! 📚✨**
+
+*Last Updated: November 2025*
