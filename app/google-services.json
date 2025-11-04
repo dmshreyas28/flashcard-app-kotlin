@@ -14,6 +14,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "480838702429-74ao60n0o7vp65mkjute26lqimco211p.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.flashmaster.app",
+            "certificate_hash": "4e13caa841ed826ad49837bd664ec6323e7fe87d"
+          }
+        },
+        {
           "client_id": "480838702429-ma7dep1ffff2v6njs03v3lppl41ipg7i.apps.googleusercontent.com",
           "client_type": 3
         }
