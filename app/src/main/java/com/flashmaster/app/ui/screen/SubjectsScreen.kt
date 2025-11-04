@@ -65,7 +65,7 @@ fun SubjectsScreen(
                                 onLogout()
                             },
                             leadingIcon = {
-                                Icon(Icons.Default.ExitToApp, contentDescription = null)
+                                Icon(Icons.AutoMirrored.Filled.ExitToApp, contentDescription = null)
                             }
                         )
                     }
