@@ -31,6 +31,8 @@ fun FlashcardsScreen(
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     var showExportSuccess by remember { mutableStateOf(false) }
+    var flashcardToEdit by remember { mutableStateOf<com.flashmaster.app.data.model.Flashcard?>(null) }
+    var flashcardToDelete by remember { mutableStateOf<com.flashmaster.app.data.model.Flashcard?>(null) }
 
     LaunchedEffect(topicId) {
         viewModel.loadFlashcardsByTopic(topicId)
@@ -123,39 +125,11 @@ fun FlashcardsScreen(
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 items(flashcards) { flashcard ->
-                    Card(
-                        modifier = Modifier.fillMaxWidth(),
-                        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
-                    ) {
-                        Column(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(16.dp)
-                        ) {
-                            Text(
-                                "Front:",
-                                style = MaterialTheme.typography.labelSmall,
-                                color = MaterialTheme.colorScheme.primary
-                            )
-                            Text(
-                                flashcard.front,
-                                style = MaterialTheme.typography.bodyLarge,
-                                fontWeight = FontWeight.Medium
-                            )
-                            Spacer(modifier = Modifier.height(8.dp))
-                            Divider()
-                            Spacer(modifier = Modifier.height(8.dp))
-                            Text(
-                                "Back:",
-                                style = MaterialTheme.typography.labelSmall,
-                                color = MaterialTheme.colorScheme.secondary
-                            )
-                            Text(
-                                flashcard.back,
-                                style = MaterialTheme.typography.bodyMedium
-                            )
-                        }
-                    }
+                    FlashcardCard(
+                        flashcard = flashcard,
+                        onEdit = { flashcardToEdit = it },
+                        onDelete = { flashcardToDelete = it }
+                    )
                 }
             }
         }
@@ -203,5 +177,173 @@ fun FlashcardsScreen(
                 }
             )
         }
+
+        // Edit flashcard dialog
+        flashcardToEdit?.let { flashcard ->
+            EditFlashcardDialog(
+                flashcard = flashcard,
+                onDismiss = { flashcardToEdit = null },
+                onConfirm = { front, back ->
+                    viewModel.updateFlashcard(flashcard.copy(front = front, back = back))
+                    flashcardToEdit = null
+                }
+            )
+        }
+
+        // Delete confirmation dialog
+        flashcardToDelete?.let { flashcard ->
+            AlertDialog(
+                onDismissRequest = { flashcardToDelete = null },
+                title = { Text("Delete Flashcard") },
+                text = { Text("Are you sure you want to delete this flashcard?") },
+                confirmButton = {
+                    TextButton(
+                        onClick = {
+                            viewModel.deleteFlashcard(flashcard)
+                            flashcardToDelete = null
+                        },
+                        colors = ButtonDefaults.textButtonColors(
+                            contentColor = MaterialTheme.colorScheme.error
+                        )
+                    ) {
+                        Text("Delete")
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { flashcardToDelete = null }) {
+                        Text("Cancel")
+                    }
+                }
+            )
+        }
     }
+}
+
+@Composable
+fun FlashcardCard(
+    flashcard: com.flashmaster.app.data.model.Flashcard,
+    onEdit: (com.flashmaster.app.data.model.Flashcard) -> Unit,
+    onDelete: (com.flashmaster.app.data.model.Flashcard) -> Unit
+) {
+    var showMenu by remember { mutableStateOf(false) }
+    
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.Top
+            ) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        "Front:",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                    Text(
+                        flashcard.front,
+                        style = MaterialTheme.typography.bodyLarge,
+                        fontWeight = FontWeight.Medium
+                    )
+                }
+                
+                Box {
+                    IconButton(onClick = { showMenu = true }) {
+                        Icon(Icons.Default.MoreVert, contentDescription = "Options")
+                    }
+                    
+                    DropdownMenu(
+                        expanded = showMenu,
+                        onDismissRequest = { showMenu = false }
+                    ) {
+                        DropdownMenuItem(
+                            text = { Text("Edit") },
+                            onClick = {
+                                showMenu = false
+                                onEdit(flashcard)
+                            },
+                            leadingIcon = { Icon(Icons.Default.Edit, contentDescription = null) }
+                        )
+                        DropdownMenuItem(
+                            text = { Text("Delete") },
+                            onClick = {
+                                showMenu = false
+                                onDelete(flashcard)
+                            },
+                            leadingIcon = { Icon(Icons.Default.Delete, contentDescription = null) }
+                        )
+                    }
+                }
+            }
+            
+            Spacer(modifier = Modifier.height(8.dp))
+            Divider()
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                "Back:",
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.secondary
+            )
+            Text(
+                flashcard.back,
+                style = MaterialTheme.typography.bodyMedium
+            )
+        }
+    }
+}
+
+@Composable
+fun EditFlashcardDialog(
+    flashcard: com.flashmaster.app.data.model.Flashcard,
+    onDismiss: () -> Unit,
+    onConfirm: (String, String) -> Unit
+) {
+    var front by remember { mutableStateOf(flashcard.front) }
+    var back by remember { mutableStateOf(flashcard.back) }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Edit Flashcard") },
+        text = {
+            Column {
+                OutlinedTextField(
+                    value = front,
+                    onValueChange = { front = it },
+                    label = { Text("Front") },
+                    modifier = Modifier.fillMaxWidth()
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                OutlinedTextField(
+                    value = back,
+                    onValueChange = { back = it },
+                    label = { Text("Back") },
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+        },
+        confirmButton = {
+            TextButton(
+                onClick = {
+                    if (front.isNotBlank() && back.isNotBlank()) {
+                        onConfirm(front, back)
+                    }
+                },
+                enabled = front.isNotBlank() && back.isNotBlank()
+            ) {
+                Text("Save")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Cancel")
+            }
+        }
+    )
 }
