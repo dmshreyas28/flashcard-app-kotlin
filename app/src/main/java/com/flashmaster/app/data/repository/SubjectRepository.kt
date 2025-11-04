@@ -23,8 +23,10 @@ class SubjectRepository @Inject constructor(
     }
 
     suspend fun insertSubject(subject: Subject): Long {
-        val id = subjectDao.insertSubject(subject.copy(userId = authRepository.getUserId()))
-        syncSubjectToCloud(subject.copy(id = id))
+        val userId = authRepository.getUserId()
+        val subjectWithUser = subject.copy(userId = userId)
+        val id = subjectDao.insertSubject(subjectWithUser)
+        syncSubjectToCloud(subjectWithUser.copy(id = id))
         return id
     }
 

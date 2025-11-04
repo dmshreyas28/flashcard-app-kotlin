@@ -27,8 +27,10 @@ class FlashcardRepository @Inject constructor(
     }
 
     suspend fun insertFlashcard(flashcard: Flashcard): Long {
-        val id = flashcardDao.insertFlashcard(flashcard.copy(userId = authRepository.getUserId()))
-        syncFlashcardToCloud(flashcard.copy(id = id))
+        val userId = authRepository.getUserId()
+        val flashcardWithUser = flashcard.copy(userId = userId)
+        val id = flashcardDao.insertFlashcard(flashcardWithUser)
+        syncFlashcardToCloud(flashcardWithUser.copy(id = id))
         return id
     }
 

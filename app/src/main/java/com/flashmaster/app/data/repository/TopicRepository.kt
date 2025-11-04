@@ -27,8 +27,10 @@ class TopicRepository @Inject constructor(
     }
 
     suspend fun insertTopic(topic: Topic): Long {
-        val id = topicDao.insertTopic(topic.copy(userId = authRepository.getUserId()))
-        syncTopicToCloud(topic.copy(id = id))
+        val userId = authRepository.getUserId()
+        val topicWithUser = topic.copy(userId = userId)
+        val id = topicDao.insertTopic(topicWithUser)
+        syncTopicToCloud(topicWithUser.copy(id = id))
         return id
     }
 
