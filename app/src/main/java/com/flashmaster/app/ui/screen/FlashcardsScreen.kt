@@ -9,10 +9,13 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.flashmaster.app.ui.viewmodel.FlashcardViewModel
+import com.flashmaster.app.util.CsvExportUtil
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -24,6 +27,10 @@ fun FlashcardsScreen(
 ) {
     val flashcards by viewModel.flashcards.collectAsState()
     var showAddDialog by remember { mutableStateOf(false) }
+    var showMenu by remember { mutableStateOf(false) }
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+    var showExportSuccess by remember { mutableStateOf(false) }
 
     LaunchedEffect(topicId) {
         viewModel.loadFlashcardsByTopic(topicId)
@@ -43,6 +50,34 @@ fun FlashcardsScreen(
                         IconButton(onClick = onStudyClick) {
                             Icon(Icons.Default.School, contentDescription = "Study")
                         }
+                        IconButton(onClick = { showMenu = true }) {
+                            Icon(Icons.Default.MoreVert, contentDescription = "More")
+                        }
+                        DropdownMenu(
+                            expanded = showMenu,
+                            onDismissRequest = { showMenu = false }
+                        ) {
+                            DropdownMenuItem(
+                                text = { Text("Export to CSV") },
+                                onClick = {
+                                    showMenu = false
+                                    scope.launch {
+                                        val result = CsvExportUtil.exportFlashcardsToCSV(
+                                            context,
+                                            flashcards,
+                                            "Topic_$topicId"
+                                        )
+                                        result.onSuccess { file ->
+                                            CsvExportUtil.shareCSVFile(context, file)
+                                            showExportSuccess = true
+                                        }
+                                    }
+                                },
+                                leadingIcon = {
+                                    Icon(Icons.Default.Share, contentDescription = null)
+                                }
+                            )
+                        }
                     }
                 }
             )
@@ -50,6 +85,19 @@ fun FlashcardsScreen(
         floatingActionButton = {
             FloatingActionButton(onClick = { showAddDialog = true }) {
                 Icon(Icons.Default.Add, contentDescription = "Add Flashcard")
+            }
+        },
+        snackbarHost = {
+            if (showExportSuccess) {
+                Snackbar(
+                    action = {
+                        TextButton(onClick = { showExportSuccess = false }) {
+                            Text("OK")
+                        }
+                    }
+                ) {
+                    Text("Flashcards exported successfully!")
+                }
             }
         }
     ) { paddingValues ->
