@@ -32,7 +32,7 @@ fun LoginScreen(
     // Configure Google Sign-In
     val gso = remember {
         GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-            .requestIdToken("YOUR_WEB_CLIENT_ID") // You'll need to replace this
+            .requestIdToken("480838702429-ma7dep1ffff2v6njs03v3lppl41ipg7i.apps.googleusercontent.com")
             .requestEmail()
             .build()
     }
