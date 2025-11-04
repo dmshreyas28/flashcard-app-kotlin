@@ -1,0 +1,159 @@
+package com.flashmaster.app.ui.screen
+
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
+import com.flashmaster.app.ui.viewmodel.FlashcardViewModel
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun FlashcardsScreen(
+    topicId: Long,
+    onBackClick: () -> Unit,
+    onStudyClick: () -> Unit,
+    viewModel: FlashcardViewModel = hiltViewModel()
+) {
+    val flashcards by viewModel.flashcards.collectAsState()
+    var showAddDialog by remember { mutableStateOf(false) }
+
+    LaunchedEffect(topicId) {
+        viewModel.loadFlashcardsByTopic(topicId)
+    }
+
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text("Flashcards", fontWeight = FontWeight.Bold) },
+                navigationIcon = {
+                    IconButton(onClick = onBackClick) {
+                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                    }
+                },
+                actions = {
+                    if (flashcards.isNotEmpty()) {
+                        IconButton(onClick = onStudyClick) {
+                            Icon(Icons.Default.School, contentDescription = "Study")
+                        }
+                    }
+                }
+            )
+        },
+        floatingActionButton = {
+            FloatingActionButton(onClick = { showAddDialog = true }) {
+                Icon(Icons.Default.Add, contentDescription = "Add Flashcard")
+            }
+        }
+    ) { paddingValues ->
+        if (flashcards.isEmpty()) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues),
+                contentAlignment = Alignment.Center
+            ) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text("No flashcards yet")
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Button(onClick = { showAddDialog = true }) {
+                        Text("Add Your First Flashcard")
+                    }
+                }
+            }
+        } else {
+            LazyColumn(
+                modifier = Modifier.padding(paddingValues),
+                contentPadding = PaddingValues(16.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                items(flashcards) { flashcard ->
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                    ) {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp)
+                        ) {
+                            Text(
+                                "Front:",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                            Text(
+                                flashcard.front,
+                                style = MaterialTheme.typography.bodyLarge,
+                                fontWeight = FontWeight.Medium
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Divider()
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Text(
+                                "Back:",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.secondary
+                            )
+                            Text(
+                                flashcard.back,
+                                style = MaterialTheme.typography.bodyMedium
+                            )
+                        }
+                    }
+                }
+            }
+        }
+
+        if (showAddDialog) {
+            var front by remember { mutableStateOf("") }
+            var back by remember { mutableStateOf("") }
+            
+            AlertDialog(
+                onDismissRequest = { showAddDialog = false },
+                title = { Text("Add New Flashcard") },
+                text = {
+                    Column {
+                        OutlinedTextField(
+                            value = front,
+                            onValueChange = { front = it },
+                            label = { Text("Front") },
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        OutlinedTextField(
+                            value = back,
+                            onValueChange = { back = it },
+                            label = { Text("Back") },
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    }
+                },
+                confirmButton = {
+                    TextButton(
+                        onClick = {
+                            if (front.isNotBlank() && back.isNotBlank()) {
+                                viewModel.addFlashcard(topicId, front, back)
+                                showAddDialog = false
+                            }
+                        }
+                    ) {
+                        Text("Add")
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { showAddDialog = false }) {
+                        Text("Cancel")
+                    }
+                }
+            )
+        }
+    }
+}
