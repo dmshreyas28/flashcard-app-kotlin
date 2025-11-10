@@ -24,9 +24,11 @@ fun FlashcardsScreen(
     topicId: Long,
     onBackClick: () -> Unit,
     onStudyClick: () -> Unit,
+    onUploadClick: () -> Unit = {},
     viewModel: FlashcardViewModel = hiltViewModel()
 ) {
     val flashcards by viewModel.flashcards.collectAsState()
+    val currentTopic by viewModel.currentTopic.collectAsState()
     var showAddDialog by remember { mutableStateOf(false) }
     var showMenu by remember { mutableStateOf(false) }
     val context = LocalContext.current
@@ -49,6 +51,10 @@ fun FlashcardsScreen(
                     }
                 },
                 actions = {
+                    // Upload Notes with AI button
+                    IconButton(onClick = onUploadClick) {
+                        Icon(Icons.Default.Upload, contentDescription = "Upload Notes")
+                    }
                     if (flashcards.isNotEmpty()) {
                         IconButton(onClick = onStudyClick) {
                             Icon(Icons.Default.School, contentDescription = "Study")

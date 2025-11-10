@@ -9,6 +9,13 @@ A beautiful Android application built with Kotlin and Jetpack Compose that helps
 - Light and Dark theme support
 - Color-coded subjects for better organization
 
+🤖 **AI-Powered Flashcard Generation** ⭐ NEW!
+- Upload notes (PDF, text files, or images)
+- AI automatically generates flashcards from your notes
+- Get AI-generated summaries for quick review
+- OCR text extraction from images
+- Powered by Google Gemini AI
+
 🎴 **Flashcard Management**
 - Create subjects with custom colors
 - **Edit and delete subjects**
@@ -48,6 +55,8 @@ A beautiful Android application built with Kotlin and Jetpack Compose that helps
 - **Architecture**: MVVM (Model-View-ViewModel)
 - **Dependency Injection**: Hilt/Dagger
 - **Local Database**: Room Database (SQLite)
+- **AI Integration**: Google Gemini API for flashcard generation
+- **Text Extraction**: PDFBox (PDF), ML Kit (OCR)
 - **Cloud Storage**: Firebase Firestore
 - **Authentication**: Firebase Auth with Google Sign-In
 - **Navigation**: Jetpack Navigation Compose
@@ -59,6 +68,7 @@ A beautiful Android application built with Kotlin and Jetpack Compose that helps
 - JDK 17
 - Android SDK (API level 26 or higher)
 - Firebase account
+- **Google Gemini API key** (for AI features - see [AI_SETUP.md](AI_SETUP.md))
 
 ## Getting Started
 
@@ -69,7 +79,19 @@ git clone https://github.com/Skyrocket345/flashcard-app-kotlin.git
 cd flashcard-app-kotlin
 ```
 
-### 2. Firebase Setup
+### 2. AI Setup (Required for AI Features)
+
+**Follow the detailed guide in [AI_SETUP.md](AI_SETUP.md)**
+
+Quick steps:
+1. Get a free API key from [Google AI Studio](https://makersuite.google.com/app/apikey)
+2. Add to `local.properties`:
+   ```properties
+   GEMINI_API_KEY=your_api_key_here
+   ```
+3. Sync Gradle
+
+### 3. Firebase Setup
 
 **IMPORTANT**: You must configure Firebase before running the app. Follow the detailed guide in [FIREBASE_SETUP.md](FIREBASE_SETUP.md)
 

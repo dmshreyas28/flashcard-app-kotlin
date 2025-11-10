@@ -64,6 +64,11 @@ fun AppNavigation(
                 onBackClick = { navController.popBackStack() },
                 onStudyClick = {
                     navController.navigate(Screen.Study.createRoute(topicId))
+                },
+                onUploadClick = {
+                    // Default topic name if not loaded yet
+                    val topicName = "Topic"
+                    navController.navigate(Screen.UploadNote.createRoute(topicId, topicName))
                 }
             )
         }
@@ -76,6 +81,22 @@ fun AppNavigation(
             FlashcardStudyScreen(
                 topicId = topicId,
                 onBackClick = { navController.popBackStack() }
+            )
+        }
+
+        composable(
+            route = Screen.UploadNote.route,
+            arguments = listOf(
+                navArgument("topicId") { type = NavType.LongType },
+                navArgument("topicName") { type = NavType.StringType }
+            )
+        ) { backStackEntry ->
+            val topicId = backStackEntry.arguments?.getLong("topicId") ?: 0L
+            val topicName = backStackEntry.arguments?.getString("topicName") ?: ""
+            UploadNoteScreen(
+                topicId = topicId,
+                topicName = topicName,
+                onNavigateBack = { navController.navigateUp() }
             )
         }
     }

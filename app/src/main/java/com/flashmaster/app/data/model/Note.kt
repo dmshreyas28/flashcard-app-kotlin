@@ -6,7 +6,7 @@ import androidx.room.Index
 import androidx.room.PrimaryKey
 
 @Entity(
-    tableName = "flashcards",
+    tableName = "notes",
     foreignKeys = [
         ForeignKey(
             entity = Topic::class,
@@ -17,16 +17,25 @@ import androidx.room.PrimaryKey
     ],
     indices = [Index("topicId")]
 )
-data class Flashcard(
+data class Note(
     @PrimaryKey(autoGenerate = true)
     val id: Long = 0,
     val topicId: Long,
-    val front: String,
-    val back: String,
+    val title: String,
+    val originalText: String, // Full note text extracted from file
+    val summary: String? = null, // AI-generated summary
+    val fileName: String? = null,
+    val fileType: String, // "pdf", "txt", "image"
+    val processingStatus: ProcessingStatus = ProcessingStatus.PENDING,
     val userId: String,
     val createdAt: Long = System.currentTimeMillis(),
     val updatedAt: Long = System.currentTimeMillis(),
-    val syncedToCloud: Boolean = false,
-    val isAiGenerated: Boolean = false,
-    val sourceNoteId: Long? = null
+    val syncedToCloud: Boolean = false
 )
+
+enum class ProcessingStatus {
+    PENDING,      // Uploaded, not processed yet
+    PROCESSING,   // AI is working on it
+    COMPLETED,    // Flashcards generated successfully
+    FAILED        // Error occurred during processing
+}

@@ -12,4 +12,7 @@ sealed class Screen(val route: String) {
     object Study : Screen("study/{topicId}") {
         fun createRoute(topicId: Long) = "study/$topicId"
     }
+    object UploadNote : Screen("upload_note/{topicId}/{topicName}") {
+        fun createRoute(topicId: Long, topicName: String) = "upload_note/$topicId/$topicName"
+    }
 }

@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
@@ -21,6 +23,14 @@ android {
         vectorDrawables {
             useSupportLibrary = true
         }
+        
+        // Read API key from local.properties
+        val properties = Properties()
+        val localPropertiesFile = project.rootProject.file("local.properties")
+        if (localPropertiesFile.exists()) {
+            properties.load(localPropertiesFile.inputStream())
+        }
+        buildConfigField("String", "GEMINI_API_KEY", "\"${properties.getProperty("GEMINI_API_KEY", "")}\"")
     }
 
     buildTypes {
@@ -41,6 +51,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
     composeOptions {
         kotlinCompilerExtensionVersion = "1.5.4"
@@ -99,6 +110,18 @@ dependencies {
 
     // CSV Export
     implementation("com.opencsv:opencsv:5.8")
+
+    // AI Integration
+    implementation("com.google.ai.client.generativeai:generativeai:0.1.2")
+    
+    // PDF text extraction
+    implementation("com.tom-roush:pdfbox-android:2.0.27.0")
+    
+    // Image text extraction (OCR)
+    implementation("com.google.mlkit:text-recognition:16.0.0")
+    
+    // Markdown rendering for summaries
+    implementation("com.github.jeziellago:compose-markdown:0.3.6")
 
     // Testing
     testImplementation("junit:junit:4.13.2")
